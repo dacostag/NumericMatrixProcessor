@@ -1,11 +1,15 @@
-n1, m1 = map(int, input().split())
-matrix_1 = [input().split() for i in range(n1)]
-n2, m2 = map(int, input().split())
-matrix_2 = [input().split() for j in range(n2)]
+def request_matrix():
+    n, m = map(int, input().split())
+    return [list(map(int, input().split())) for _ in range(n)]
 
-if n1 != n2 or m1 != m2:
-    print("ERROR")
-else:
-    matrix_sum = [[int(matrix_1[i][j]) + int(matrix_2[i][j]) for j in range(m1)] for i in range(n1)]
-    for i in matrix_sum:
-        print(*i)
+def add_matrix(a, b):
+    if len(a) != len(b) or len(a[0]) != len(b[0]):
+        print("ERROR")
+        return []
+    else:
+        return [[a[i][j] + b[i][j] for j in range(len(a[0]))] for i in range(len(a))]
+
+matrix_1, matrix_2 = request_matrix(), request_matrix()
+
+for row in add_matrix(matrix_1, matrix_2):
+    print(*row)
