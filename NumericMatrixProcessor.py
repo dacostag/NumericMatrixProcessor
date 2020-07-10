@@ -1,24 +1,70 @@
-def request_matrix():
-    """Take two values, n and m, from input and return a matrix of n rows and m columns. Each row takes its values from input as well."""
-    n, m = map(int, input().split())
-    return [[int(num) for num in input().split()] for _ in range(n)]
+class Matrix:
+    OP_ERROR = "The operation cannot be performed."
 
-def add_matrix(a, b):
-    """Take two matrices and return their sum if possible. Else, return an empty list."""
-    if len(a) != len(b) or len(a[0]) != len(b[0]):
-        print("ERROR")
-        return []
-    else:
-        return [[a[i][j] + b[i][j] for j in range(len(a[0]))] for i in range(len(a))]  # Probably can be done with zips.
+    def __init__(self, n=0, m=0, data=None):
+        self.row_n = n
+        self.col_n = m
+        self.data = [data[m*i:m*(i+1)] for i in range(n)]  # Probably should add self.rows = self.data
+        self.columns = [data[i::m] for i in range(m)]
 
-def scalar_product(m, s):
-    """Return the scalar product of matrix m with scalar s."""
-    return [[m[i][j] * s for j in range(len(m[0]))] for i in range(len(m))] # range(len(m))'s should be properties of the matrix. Or even just rows and columns.
+    def __repr__(self):
+        return "\n".join(" ".join(str(num) for num in row) for row in self.data)
 
-def matrix_product(a, b):
-    columns = [[b[i][j] for i in range(len(b))] for j in range(len(b[0]))]  # Property of each matrix.
-    return [[dot_product(row, col) for col in columns] for row in a]
+    def __add__(self, other):
+        """If both matrices have the same number of rows and columns, return a new Matrix with the sum. Else, print OP_ERROR and return an empty Matrix."""
+        if isinstance(other, Matrix) and self.row_n == other.row_n and self.col_n == other.col_n:
+            return Matrix(self.row_n, self.col_n, [a + b for a_row, b_row in zip(self.data, other.data) for a, b in zip(a_row, b_row)])
+        else:
+            print(self.OP_ERROR)
+            return Matrix()
 
-def dot_product(v1, v2):
-    """Return the dot product between vectors v1 and v2."""
-    return sum(num1 * num2 for num1, num2 in zip(v1, v2))
+    def __mul__(self, other):
+        """If other is type float or int, return the scalar product. If other is type Matrix, return the matrix product. Else, print OP_ERROR and return an empty Matrix."""
+        if isinstance(other, (int, float)):
+            return Matrix(self.row_n, self.col_n, [a * other for a_row in self.data for a in a_row])
+        elif isinstance(other, Matrix):
+            return Matrix(self.row_n, other.col_n, [self.dot_product(a_row, b_col) for a_row in self.data for b_col in other.columns])
+        else:
+            print(self.OP_ERROR)
+            return Matrix()
+
+    @staticmethod
+    def dot_product(v1, v2):
+        """Return the dot product between vectors v1 and v2."""
+        return sum(num1 * num2 for num1, num2 in zip(v1, v2))
+
+def display_menu():
+    print("1. Add matrices",
+          "2. Multiply matrix by a constant",
+          "3. Multiply matrices",
+          "0. Exit", sep="\n")
+
+def display_result_matrix(m):
+    print("The result is: ", m, sep="\n")
+
+def request_matrix(ordinal="\b"):
+    """Requests rows and columns from input, then builds data based on rows provided as separate lines of input. Displays a message based on ordinal provided."""
+    n, m = map(int, input(f"Enter size of {ordinal} matrix: ").split())
+    data = []
+    print(f"Enter {ordinal} matrix: ")
+    for _ in range(n):
+        data += [float(num) if "." in num else int(num) for num in input().split()]
+    return Matrix(n, m, data)
+
+while True:
+    display_menu()
+    choice = int(input("Your choice: "))
+    if choice == 0:
+        break
+    elif choice == 1:
+        a, b = request_matrix("first"), request_matrix("second")
+        result = a + b
+    elif choice == 2:
+        a = request_matrix()
+        b = int(input("Enter constant: "))
+        result = a * b
+    elif choice == 3:
+        a, b = request_matrix("first"), request_matrix("second")
+        result = a * b
+    display_result_matrix(result)
+    print()
