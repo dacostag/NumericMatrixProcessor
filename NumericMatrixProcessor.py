@@ -43,14 +43,6 @@ class Matrix:
     def h_transpose(self):
         """Return a horizontally transposed version of the Matrix."""
         return Matrix(self.row_n, self.col_n, [num for row in self.data[::-1] for num in row])
-
-    def cofactor(self, i, j):
-        """Return the i, j cofactor of self."""
-        return (-1) ** (i + j) * self.minor(i, j)
-
-    def minor(self, i, j):
-        """Return the i, j minor of self."""
-        return self.submatrix(i, j).det()
     
     def det(self):
         """Return the determinant of self, calculated across the first row. If not possible to calculate, return None."""
@@ -62,6 +54,25 @@ class Matrix:
         if self.row_n == 2:
             return self.data[0][0] * self.data[1][1] - self.data[0][1] * self.data[1][0]
         return sum(num * self.cofactor(1, j) for j, num in enumerate(self.data[0], 1))
+
+    def inverse(self):
+        """Return the inverse matrix of self as a Matrix. If not inversible, return an empty Matrix."""
+        if not self.det():
+            print("This matrix doesn't have an inverse.")
+            return Matrix()
+        return self.cofactor_matrix().transpose() * (1 / self.det())
+    
+    def cofactor_matrix(self):
+        """Return the cofactor matrix of self as a Matrix."""
+        return Matrix(self.row_n, self.col_n, [self.cofactor(i, j) for i in range(1, self.row_n + 1) for j in range(1, self.col_n + 1)])
+    
+    def cofactor(self, i, j):
+        """Return the i, j cofactor of self."""
+        return (-1) ** (i + j) * self.minor(i, j)
+
+    def minor(self, i, j):
+        """Return the i, j minor of self."""
+        return self.submatrix(i, j).det()
 
     def submatrix(self, i, j):
         """Return a Matrix identical to self with row i and column j removed."""
@@ -78,6 +89,7 @@ def display_menu():
           "3. Multiply matrices",
           "4. Transpose matrix",
           "5. Calculate a determinant",
+          "6. Inverse matrix",
           "0. Exit", sep="\n")
 
 def display_diagonals():
@@ -97,7 +109,7 @@ def request_matrix(ordinal="\b"):
     for _ in range(n):
         data += [float(num) if "." in num else int(num) for num in input().split()]
     return Matrix(n, m, data)
-    
+
 while True:
     display_menu()
     choice = int(input("Your choice: "))
@@ -126,4 +138,6 @@ while True:
             result = request_matrix().h_transpose()
     elif choice == 5:
         result = request_matrix().det()
+    elif choice == 6:
+        result = request_matrix().inverse()
     display_result(result)
